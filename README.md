@@ -1,96 +1,83 @@
 # Word Guessing Game Development
 
-A progressive development of a word guessing game, showcasing different architectural approaches and improvements.
+This repository contains different implementations of a word guessing game, each with increasing complexity and features.
 
 ## Project Structure
 
 ### d0_simple_langchain/
-Initial version using basic LangChain integration
-- Simple word generation
-- Basic hint system
-- Flask web interface
-- File: `app.py`
+- Basic implementation using LangChain
+- Simple word guessing functionality
+- OpenAI integration for word generation
 
 ### d1_chatbot/
-(Reserved for future development)
-- Planned chatbot-style interaction improvements
+- Enhanced version with graph-based workflow
+- Human-in-the-loop interaction pattern
+- Features:
+  - Interactive chat-based interface
+  - Attempt tracking (max 10 attempts)
+  - Memory management for conversation history
+  - Workflow visualization
+
+#### Workflow Graph
+The game flow in `d1_chatbot/app1.py` follows this pattern:
+1. Start → Human Input: Game begins with player's greeting
+2. Human Input → Chatbot: Player makes a guess or requests a hint
+3. Chatbot → Check State: Process the input and generate response
+4. Check State → Human Input: Continue if attempts < 10
+5. Check State → End: Exit if max attempts reached or player quits
+
+A visual representation of this workflow is saved as `workflow_graph.png` in the d1_chatbot directory.
 
 ### d2_multi_agent/
-Advanced version using multi-agent architecture
-- LangGraph implementation
-- Multiple specialized agents
-- Enhanced state management
-- File: `app3.py`
+- Advanced implementation with multiple specialized agents
+- Complex interaction patterns
+- Enhanced game features
 
-## Versions
+## Setup and Installation
 
-### `app2.py`: Enhanced Version with Agent-Based Architecture
-The enhanced version implements a sophisticated multi-agent system using LangChain and LangGraph for more intelligent gameplay.
+1. Clone the repository
+2. Create a `.env` file in the root directory with your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_api_key_here
+   ```
+3. Install required packages:
+   ```bash
+   pip install openai python-dotenv langchain langgraph graphviz
+   ```
 
-#### Key Features
-- **Agent-Based Architecture**
-  - Central Interaction Agent: Manages game flow and communication
-  - Word Generator Agent: Handles word selection and metadata
-  - Game Logic Agent: Processes guesses and game state
-  - Hint and Feedback Agent: Provides intelligent hints
-  - Scoring Agent: Manages game scoring and statistics
+## Running the Game
 
-#### Technical Improvements
-- LangGraph implementation for structured agent communication
-- State management using TypedDict for better type safety
-- Directed graph workflow for game logic
-- Enhanced error handling and state recovery
-- Improved hint generation system
+### Simple Version (d0_simple_langchain)
+```bash
+python d0_simple_langchain/app.py
+```
 
-#### Graph Structure
-- Nodes: generate_word, process_guess, generate_hint
-- Conditional routing based on game state
-- Compiled graph for optimized performance
+### Chatbot Version (d1_chatbot)
+```bash
+python d1_chatbot/app1.py
+```
 
-### `app.py`: Initial Version
+### Multi-Agent Version (d2_multi_agent)
+```bash
+python d2_multi_agent/app2.py
+```
 
-## Features (app.py)
+## Features by Version
 
-### Core Functionality
-- Dynamic word generation using OpenAI's GPT-3.5 model
-- Intelligent hint system that provides context-aware clues
-- Maximum 10 attempts per game
-- Word diversity system to prevent repetition
+### d1_chatbot (Current Focus)
+- Graph-based workflow management
+- Interactive chat interface
+- Attempt tracking and limits
+- Conversation memory
+- Workflow visualization
+- Human-in-the-loop interaction pattern
 
-### Game Interface
-- Clean, modern web interface
-- Real-time attempt counter (0/10)
-- Chat-style interaction between player and AI
+## Dependencies
+- OpenAI
+- LangChain
+- LangGraph
+- Graphviz (for workflow visualization)
+- python-dotenv (for environment management)
 
-### Game Controls
-- Start New Game button
-- Restart Game button (reveals current word before starting new game)
-- Exit Game button (reveals word before closing)
-- Submit Guess functionality
-
-### AI Integration
-- OpenAI API for random word generation
-- LangChain integration for intelligent hint generation
-- Strict hint system that never reveals the answer directly
-
-### Game Rules
-1. Player has 10 attempts to guess the word
-2. AI provides hints after each guess
-3. Game ends when:
-   - Player correctly guesses the word
-   - Player reaches maximum attempts (10)
-   - Player chooses to give up
-   - Player exits or restarts the game
-
-## Technical Implementation
-- Backend: Python Flask
-- AI Integration: OpenAI API, LangChain
-- Frontend: HTML, JavaScript
-- State Management: Server-side game state
-- Environment Variables: Secure API key storage
-
-## Future Development
-The next version (`app2.py`) will build upon this foundation to introduce more complex features and gameplay mechanics.
-
-## Setup
-1. Create a `.env` file with your OpenAI API key:
+## Note
+Make sure to have your OpenAI API key properly configured in the `.env` file before running any version of the game.
