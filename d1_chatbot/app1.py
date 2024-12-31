@@ -1,159 +1,133 @@
-from typing import Dict, List, Optional, TypedDict, Annotated
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph, END, START
+from typing import TypedDict, List
+from openai import OpenAI
+from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 from dotenv import load_dotenv
 import os
-from IPython.display import Image, display
+from pathlib import Path
+import graphviz
 
-# Load environment variables
-load_dotenv()
+# Get the root directory (parent of d1_chatbot)
+root_dir = Path(__file__).parent.parent
 
-# Define our state with type hints
-class ChatState(TypedDict):
-    messages: List[BaseMessage]
-    game_active: bool
-    current_word: Optional[str]
+# Load environment variables from root directory
+load_dotenv(root_dir / '.env')
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# Define our state
+class State(TypedDict):
+    messages: List[dict]
     attempts: int
-    chat_history: List[str]
-    hint_level: int
-    should_end: bool  # New: explicit end state flag
 
 def create_chat_graph():
-    # Initialize LLM with chat prompt
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a friendly word guessing game host. Be engaging and encouraging."),
-        MessagesPlaceholder(variable_name="chat_history"),
-        ("human", "{input}")
-    ])
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
-    
     # Create the graph
-    workflow = StateGraph(ChatState)
+    workflow = StateGraph(State)
     
-    # Define the nodes with proper state handling
-    def chat_interaction(state: ChatState) -> Dict:
-        """Main chatbot interaction node"""
-        messages = state["messages"]
-        response = llm.invoke(messages)
-        return {"messages": [response], "should_end": False}
+    def chatbot(state: State) -> dict:
+        """Process chat messages and return response"""
+        # Prepare messages for API call
+        messages = [
+            {"role": "system", "content": "You are a friendly word guessing game host. Never reveal the word unless the player explicitly says 'I give up'."},
+            *state["messages"][-5:]  # Keep last 5 messages
+        ]
+        
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            temperature=0.7
+        )
+        
+        return {
+            "messages": [{"role": "assistant", "content": response.choices[0].message.content}],
+            "attempts": state["attempts"] + 1
+        }
+
+    # Add node
+    workflow.add_node("chatbot", chatbot)
+    workflow.set_entry_point("chatbot")
     
-    def process_game_action(state: ChatState) -> Dict:
-        """Process game-related actions"""
-        # Game logic implementation here
-        return {"messages": state["messages"], "should_end": False}
-    
-    def end_conversation(state: ChatState) -> Dict:
-        """Handle game ending"""
-        farewell = AIMessage(content="Thanks for playing! Goodbye!")
-        return {"messages": [farewell], "should_end": True}
-    
-    # Add nodes
-    workflow.add_node("chat", chat_interaction)
-    workflow.add_node("game", process_game_action)
-    workflow.add_node("end", end_conversation)
-    
-    # Define the router
-    def router(state: ChatState) -> str:
-        if state.get("should_end", False):
+    def router(state: State) -> str:
+        if state["attempts"] >= 10:  # Max attempts reached
             return END
-        
-        messages = state["messages"]
-        if not messages:
-            return "chat"
             
-        last_message = messages[-1].content.lower()
-        
-        if "exit" in last_message or "quit" in last_message:
-            return "end"
-        elif state["game_active"]:
-            return "game"
-        else:
-            return "chat"
-    
-    # Set up the graph structure
-    workflow.set_entry_point("chat")
-    
-    # Add edges with conditional routing
+        last_message = state["messages"][-1]["content"].lower()
+        if "quit" in last_message or "exit" in last_message:
+            return END
+        return "chatbot"
+
     workflow.add_conditional_edges(
-        "chat",
+        "chatbot",
         router,
         {
-            "chat": "chat",
-            "game": "game",
-            "end": "end",
+            "chatbot": "chatbot",
             END: END
         }
     )
-    
-    workflow.add_conditional_edges(
-        "game",
-        router,
-        {
-            "chat": "chat",
-            "end": "end",
-            END: END
-        }
-    )
-    
-    workflow.add_edge("end", END)
-    
+
     return workflow.compile()
 
-def init_chat_state() -> ChatState:
-    return {
-        "messages": [
-            SystemMessage(content="You are a friendly word guessing game host. Be engaging and encouraging.")
-        ],
-        "game_active": False,
-        "current_word": None,
-        "attempts": 0,
-        "chat_history": [],
-        "hint_level": 0,
-        "should_end": False
-    }
+def save_workflow_graph():
+    """Create and save a visualization of the workflow"""
+    dot = graphviz.Digraph(comment='Word Guessing Game Workflow')
+    dot.attr(rankdir='TB')  # Top to bottom layout
+    
+    # Add nodes
+    dot.node('START', 'Start', shape='oval')
+    dot.node('HUMAN', 'Human Input\n(Guess/Hint Request)', shape='box', style='rounded')
+    dot.node('CHATBOT', 'Chatbot\nProcess Message', shape='box')
+    dot.node('CHECK', 'Check State', shape='diamond')
+    dot.node('END', 'End Game', shape='oval')
+    
+    # Add edges
+    dot.edge('START', 'HUMAN', 'Initial Greeting')
+    dot.edge('HUMAN', 'CHATBOT', 'Send Message')
+    dot.edge('CHATBOT', 'CHECK', 'Process Complete')
+    dot.edge('CHECK', 'HUMAN', 'Continue\n(attempts < 10)')
+    dot.edge('CHECK', 'END', 'Exit\n(attempts >= 10 or quit)')
+    
+    # Save the graph
+    dot.render(Path(__file__).parent / 'workflow_graph', format='png', cleanup=True)
 
-def visualize_graph(workflow):
-    """Save and display the graph visualization"""
-    try:
-        # Save the graph visualization as PNG
-        graph_image = workflow.get_graph().draw_mermaid_png()
-        
-        # Save to file
-        with open("d1_chatbot/chat_flow_graph.png", "wb") as f:
-            f.write(graph_image)
-            
-        print("Graph visualization saved as 'chat_flow_graph.png'")
-        
-        # Display the graph
-        display(Image(graph_image))
-    except Exception as e:
-        print(f"Failed to visualize graph: {e}")
-
-# Test the graph
 if __name__ == "__main__":
-    # Create and compile the graph
-    workflow = StateGraph(ChatState)
+    # Generate and save the workflow graph
+    try:
+        save_workflow_graph()
+        print("Workflow graph saved as 'workflow_graph.png'")
+    except Exception as e:
+        print(f"Error saving workflow graph: {str(e)}")
     
-    # Add nodes and edges (same as in create_chat_graph)
-    # ... [previous node and edge definitions] ...
+    app = create_chat_graph()
     
-    # Compile the graph
-    app = workflow.compile()
-    
-    # Visualize the graph
-    visualize_graph(app)
-    
-    # Test the flow
-    state = init_chat_state()
-    state["messages"].append(HumanMessage(content="Hi, let's play a game!"))
+    # Initialize state
+    state = {
+        "messages": [
+            {"role": "user", "content": "Hi, let's play a word guessing game!"}
+        ],
+        "attempts": 0
+    }
     
     try:
-        result = app.invoke(state)
-        print("\nChat flow completed successfully!")
+        # Run the graph
+        result = app.invoke(
+            state,
+            config={
+                "configurable": {
+                    "thread_id": "chat_1",
+                    "checkpoint_ns": "word_game",
+                    "checkpoint_id": "session_1"
+                }
+            }
+        )
+        print("\nChat flow completed!")
         for message in result["messages"]:
-            print(f"{message.type}: {message.content}")
+            print(f"{message['role'].upper()}: {message['content']}")
     except Exception as e:
-        print(f"Error in chat flow: {str(e)}") 
+        print(f"Error: {str(e)}")
+        # Print API key status (without revealing the key)
+        api_key = os.getenv('OPENAI_API_KEY')
+        if api_key is None:
+            print("API key not found in environment variables")
+        else:
+            print(f"API key found (length: {len(api_key)})") 
