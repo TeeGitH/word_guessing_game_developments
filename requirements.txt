@@ -1,0 +1,9 @@
+langgraph[all]
+langchain-core
+langchain-openai
+langchain-community
+python-dotenv
+flask
+openai
+ipython
+graphviz 

@@ -1,6 +1,26 @@
-# Word Guessing Game
+# Word Guessing Game Development
 
-A Flask-based interactive word guessing game that leverages OpenAI's GPT model for word generation and intelligent hint responses.
+A progressive development of a word guessing game, showcasing different architectural approaches and improvements.
+
+## Project Structure
+
+### d0_simple_langchain/
+Initial version using basic LangChain integration
+- Simple word generation
+- Basic hint system
+- Flask web interface
+- File: `app.py`
+
+### d1_chatbot/
+(Reserved for future development)
+- Planned chatbot-style interaction improvements
+
+### d2_multi_agent/
+Advanced version using multi-agent architecture
+- LangGraph implementation
+- Multiple specialized agents
+- Enhanced state management
+- File: `app3.py`
 
 ## Versions
 
