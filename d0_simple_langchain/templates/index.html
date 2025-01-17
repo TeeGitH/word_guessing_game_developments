@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Guessing Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Word Guessing Game</h1>
+    <div class="game-stats">
+        <div class="attempts-counter">
+            Attempts Made: <span id="attempts-count">0</span>/10
+        </div>
+        <div class="button-group">
+            <button onclick="startNewGame()" class="restart-button">Restart Game</button>
+            <button onclick="exitGame()" class="exit-button">Exit Game</button>
+        </div>
+    </div>
+    <div class="chat-container" id="chat-container">
+        <!-- Messages will appear here -->
+    </div>
+    <div class="input-container">
+        <input type="text" id="guess-input" placeholder="Enter your guess... 👤" disabled>
+        <button onclick="makeGuess()" id="guess-button" disabled>Submit Guess</button>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html> 

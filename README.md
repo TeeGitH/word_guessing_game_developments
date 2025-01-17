@@ -4,10 +4,39 @@ This repository contains different implementations of a word guessing game, each
 
 ## Project Structure
 
-### d0_simple_langchain/
-- Basic implementation using LangChain
-- Simple word guessing functionality
-- OpenAI integration for word generation
+### d0_simple_langchain/ (Current Focus)
+- Basic implementation using LangChain and Flask
+- Features:
+  - Web-based interface with chat-style interaction
+  - Dynamic word generation using OpenAI's GPT-3.5
+  - Intelligent hint system
+  - Game state management
+  - Word diversity system (prevents repetition)
+  - Maximum 10 attempts per game
+  - Game controls:
+    - Start New Game
+    - Restart Game (reveals current word)
+    - Exit Game (reveals word)
+
+#### Technical Stack
+- Backend: Flask web framework
+- AI Integration: 
+  - OpenAI API for word generation
+  - LangChain for enhanced chat interactions
+- Frontend: 
+  - HTML with embedded JavaScript
+  - Real-time updates
+  - Responsive chat interface
+
+#### Game Flow
+1. Player starts a new game
+2. AI generates a random word (using varied prompts for diversity)
+3. Player makes guesses (up to 10 attempts)
+4. AI provides contextual hints without revealing the word
+5. Game ends when:
+   - Player guesses correctly
+   - Player reaches max attempts
+   - Player gives up/exits
 
 ### d1_chatbot/
 - Enhanced version with graph-based workflow
