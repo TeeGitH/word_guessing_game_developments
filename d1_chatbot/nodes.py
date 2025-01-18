@@ -7,24 +7,47 @@ from agent_state import GameState
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 def get_random_word() -> str:
-    """Generate a random word using OpenAI API."""
-    prompts = [
-        "Generate a random common noun (object, animal, food, etc.) that would be fun to guess in a word game. Respond with just the word.",
-        "Give me a simple word from one of these categories: fruits, animals, household items, or clothing. Respond with just the word.",
-        "Provide a common English word that a child would know, suitable for a guessing game. Respond with just the word.",
-    ]
+    """Return a random word for the game."""
+    # For now, return a fixed word. Later we can expand this.
+    return "python"
+
+def chatbot_node(state: GameState) -> Dict:
+    """
+    Chatbot node that handles game initialization, interactions, and decisions.
+    Acts as an LLM that manages the game flow and player interactions.
+    """
+    # If game not initialized, set it up
+    if not state.get("current_word"):
+        return {
+            "current_word": get_random_word(),
+            "game_active": True,
+            "messages": [{"role": "assistant", "content": "Hi! I'm your word guessing game host. I've picked a word. Try to guess it!"}]
+        }
     
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a word generator for a word guessing game. Provide only a single word."},
-            {"role": "user", "content": random.choice(prompts)}
-        ],
-        max_tokens=50,
-        temperature=0.9
-    )
+    # Get the last user message
+    last_message = state["messages"][-1]
     
-    return response.choices[0].message.content.strip().lower()
+    # If it's a user message, process it
+    if last_message["role"] == "user":
+        guess = last_message["content"].strip().lower()
+        word = state["current_word"].lower()
+        
+        # Generate appropriate response based on the guess
+        if guess == word:
+            state["messages"].append({
+                "role": "assistant",
+                "content": f"Congratulations! You've guessed the word '{word}' correctly!"
+            })
+            state["game_active"] = False
+        else:
+            # Here we could add more sophisticated hint generation
+            hint = "The word is shorter" if len(guess) > len(word) else "The word is longer" if len(guess) < len(word) else "Same length, but not correct"
+            state["messages"].append({
+                "role": "assistant",
+                "content": f"Not quite right. Here's a hint: {hint}"
+            })
+    
+    return state
 
 def process_guess(state: GameState) -> Dict:
     """Process chat messages and return response."""

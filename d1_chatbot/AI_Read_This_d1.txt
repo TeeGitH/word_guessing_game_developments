@@ -1,3 +1,12 @@
+APPEND : 
+Graph Visualization Notes:
+- The `save_workflow_visualization()` function in graph_setup.py is designed to create a visual representation of the graph defined in `create_game_graph()`.
+- These two functions should maintain perfect synchronization:
+  1. `create_game_graph()` defines the actual workflow logic
+  2. `save_workflow_visualization()` creates a visual map of that exact same logic
+- Any changes to the graph structure in `create_game_graph()` must be reflected in `save_workflow_visualization()` 
+
+====================================
 WORD GUESSING GAME - D1_CHATBOT VERSION
 ====================================
 Last Updated: 18 Jan 2025, 0955 GMT+7
