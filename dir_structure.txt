@@ -1,0 +1,44 @@
+WORD_GUESSING_GAME_DEVELOPMENTS/
+│
+├── d0_simple_langchain/           # Basic version using LangChain
+│   ├── static/
+│   │   ├── css/
+│   │   │   └── style.css         # Game styling
+│   │   └── js/
+│   │       └── game.js           # Client-side game logic
+│   ├── templates/
+│   │   └── index.html            # Game interface template
+│   ├── AI_Read_This.txt          # Documentation for AI assistants
+│   ├── app.py                    # Main Flask application
+│   └── requirements.txt          # Project dependencies
+│
+├── d1_chatbot/                   # Enhanced version with LangGraph
+│   ├── app1.py                   # Single agent implementation
+│   └── workflow_graph.png        # Visual representation of game flow
+│
+├── d2_multi_agent/              # Advanced version with multiple agents
+│   └── app2.py                  # Multi-agent implementation
+│
+├── .env                         # Environment variables (API keys)
+├── .env.example                 # Template for environment variables
+├── .gitignore                   # Git ignore rules
+└── README.md                    # Project documentation
+
+Version Descriptions:
+-------------------
+1. d0_simple_langchain:
+   - Basic implementation using LangChain and Flask
+   - Simple word generation and hint system
+   - Web-based user interface
+
+2. d1_chatbot:
+   - Uses LangGraph for workflow management
+   - Single agent architecture
+   - Enhanced conversation flow
+   - Visual workflow representation
+
+3. d2_multi_agent:
+   - Advanced implementation using LangGraph
+   - Multiple specialized agents
+   - Complex interaction patterns
+   - Enhanced game features 

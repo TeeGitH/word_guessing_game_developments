@@ -1,0 +1,94 @@
+WORD GUESSING GAME - D1_CHATBOT VERSION
+====================================
+Last Updated: 18 Jan 2025, 0955 GMT+7
+
+Project Status Update (Latest Work):
+---------------------------------
+1. Code Organization:
+   - Split the original app1.py into multiple files for better organization:
+     * agent_state.py: State management and TypedDict definitions
+     * nodes.py: Core game logic (word generation, guess processing)
+     * graph_setup.py: LangGraph workflow configuration
+     * app.py: Flask web application
+     * gen_graph_visual.py: Workflow visualization generator
+
+2. Workflow Implementation:
+   - Created a graph-based workflow with the following nodes:
+     * Start (oval): Game initialization
+     * Human Input (oval): Player guess/hint request handling
+     * Chatbot (box): Message processing
+     * Check State (diamond): Game state evaluation
+     * End Game (oval): Game completion
+
+3. Visualization:
+   - Added workflow visualization using graphviz
+   - Created gen_graph_visual.py to generate workflow_graph.png
+   - Visualization shows complete game flow with:
+     * Node shapes indicating their roles
+     * Edge labels showing transition conditions
+     * Clear representation of game loop and exit conditions
+
+4. Import Structure:
+   - Fixed relative imports to work with direct script execution
+   - Defined START constant in graph_setup.py
+   - Organized imports to avoid circular dependencies
+
+Current Implementation Details:
+----------------------------
+1. Game Flow:
+   - Start → Initial greeting
+   - Human Input → Process player's guess
+   - Chatbot → Generate response/hints
+   - Check State → Evaluate game conditions
+   - Either loop back (attempts < 10) or end game
+
+2. State Management:
+   - GameState tracks:
+     * messages: Chat history
+     * attempts: Number of guesses made
+     * current_word: Word to guess
+     * game_active: Game status
+     * max_attempts: Attempt limit (10)
+
+3. Key Files and Their Roles:
+   - app.py: Main Flask application and routes
+   - graph_setup.py: LangGraph configuration and visualization
+   - nodes.py: Core game logic functions
+   - agent_state.py: State definitions and management
+
+Next Steps/TODO:
+--------------
+1. Consider adding:
+   - More sophisticated hint generation
+   - Difficulty levels
+   - Score tracking
+   - Session management for multiple games
+
+2. Potential Improvements:
+   - Enhanced error handling
+   - Better word category management
+   - Performance optimizations
+   - Additional game features
+
+Running the Project:
+------------------
+1. Main Game:
+   ```bash
+   python -m d1_chatbot.app
+   ```
+
+2. Generate Workflow Visualization:
+   ```bash
+   cd d1_chatbot
+   python gen_graph_visual.py
+   ```
+
+Dependencies:
+-----------
+- Flask (web framework)
+- LangGraph (workflow management)
+- OpenAI API (word generation and responses)
+- Graphviz (workflow visualization)
+- python-dotenv (environment management)
+
+Note: Make sure to have OpenAI API key set in .env file before running. 
